@@ -10,24 +10,40 @@
 using namespace std;
 
 int main() {
-    int N, M;
-    int a[100];
-    cin >> N >> M;
-    for(int i = 0 ; i < N ; i++) {
-        cin >> a[i];
-    }
-
+    int N;
     int result = 0;
-
-    for(int i = 0 ; i < N-2 ; i++){
-        for(int j = i+1 ; j < N-1; j++){
-            for(int k = j+1 ; k < N; k++) {
-                int temp = a[i] + a[j] + a[k];
-                if( temp <= M && temp > result){
-                    result = temp;
+    cin >> N;
+    
+    if( N < 100 ) {
+        result = N;
+    }
+    else {
+        result = 99;
+        for(int i = 1; i < 10 ; i++){
+            int temp = N;
+            for(int j = i; (2*j-i) < 10; j++) {
+                temp = i*100 + j*10 + (2*j-i);
+                if( N >= temp){
+                    result++;
+                }
+                else {
+                    break;
+                }
+            }
+            if( N < temp){
+                break;
+            }
+        }
+        
+        for(int i = 9; i > 0 ; i--) {
+            for(int j = i-1 ; (2*j-i) >= 0 ; j--) {
+                int temp = i*100 + j*10 + (2*j-i);
+                if(N >= temp) {
+                    result++;
                 }
             }
         }
     }
     cout << result << endl;
+    return 0;
 }
