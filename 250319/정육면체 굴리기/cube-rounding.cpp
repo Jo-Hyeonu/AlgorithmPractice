@@ -78,7 +78,7 @@ int main() {
             ceiling = front;
             front = floor;
             floor = back;
-            back = ceiling;
+            back = tmp;
         }
 
         if(board[DicePosX][DicePosY] == 0){
