@@ -31,8 +31,8 @@ int main() {
     }
     int ret = 0;
     for(int i = 0 ; i < n; ++i){
-        if(ret < max[i]){
-            ret = max[i];
+        if(ret < dp[i]){
+            ret = dp[i];
         }
     }
     cout << ret ;
