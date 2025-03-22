@@ -29,8 +29,14 @@ int main() {
             dp[end] = max(dp[end], dp[i] + p);
         }
     }
+    int ret = 0;
+    for(int i = 0 ; i < n; ++i){
+        if(ret < max[i]){
+            ret = max[i];
+        }
+    }
+    cout << ret ;
 
-
-    cout << dp[n];
+    
     return 0;
 }
