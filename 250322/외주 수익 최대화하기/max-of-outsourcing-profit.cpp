@@ -30,7 +30,7 @@ int main() {
         }
     }
     int ret = 0;
-    for(int i = 0 ; i < n; ++i){
+    for(int i = 0 ; i <= n; ++i){
         if(ret < dp[i]){
             ret = dp[i];
         }
