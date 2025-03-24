@@ -7,11 +7,16 @@ int n;
 vector<int> num;
 int op[3]; // + - *
 
-int maxret = -1000000000;
-int minret = 1000000000;
+int maxret = 1000000001;
+int minret = 1000000001;
 
 void dfs(int cnt, int op[3], int cur){
     if(cnt == n-1){
+        if(maxret = 1000000001 || minret = 1000000001){
+            maxret = cur;
+            minret = cur;
+            return;
+        }
         if(cur > maxret){
             maxret = cur;
             return;
