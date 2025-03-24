@@ -7,8 +7,8 @@ int n;
 vector<int> num;
 int op[3]; // + - *
 
-int maxret = -1000000001;
-int minret = 1000000001;
+int maxret = -1000000000;
+int minret = 1000000000;
 
 void dfs(int cnt, int op[3], int cur){
     if(cnt == n-1){
