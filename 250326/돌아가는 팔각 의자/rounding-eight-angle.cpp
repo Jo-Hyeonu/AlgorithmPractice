@@ -1,21 +1,117 @@
 #include <iostream>
 #include <vector>
+#include <queue>
+#include <utility>
+#include <bool>
 
 using namespace std;
 
-vector<int> v1,v2,v3,v4;
+
+
+int v[4][8];
+int isRotate[4];
+vector<pair<int, int>> q;
+int r;
+
+
+void rotate(int num, int dir);
+
 
 int main() {
-    v1.resize(8);
-    v2.resize(8);
-    v3.resize(8);
-    v4.resize(8);
 
-    for(int i = 0 ; i < 8; ++i){
-        cin >> v1.[i];
+    for(int i = 0 ; i <4 ; ++i){
+        for(int j = 0; j < 8; ++j){
+            cin>> v[i][j];
+        }
     }
-        for(int i = 0 ; i < 8; ++i){
-        cin >> v1.[i];
+
+    cin >> r;
+
+    for(int i = 0 ; i < r ; ++i){
+        int t1, t2;
+        cin >> t1, t2;
+
+        q.push_back({t1,t2});
     }
+
+    while(!q.empty()){
+        pair<int,int> cur = q.front();
+        q.pop();
+
+        for(int i = 0 ; i < 4; ++i){
+            isRotate[i] = 0;
+        }
+        rotate(cur.first, cur.second);
+
+
+    }
+    
     return 0;
+}
+
+void check(int num){
+    int left, right;
+
+    if(num-1 >= 0){
+        left = num-1;
+        if(v[num][6] != v[left][2]){
+            isRotate[left] = 1;
+            check(left);
+        }
+    }
+
+    if(num+1 < 4){
+        right = num+1;
+        if(v[num][2] != v[right][6]){
+            isRotate[right][1];
+            check(right);
+        }
+    }
+
+    return;
+}
+
+void move(int num, int dir){
+    int tmp = v[num][0];
+
+
+    if(dir == 1){
+        v[num][0] = v[num][7];
+        v[num][7] = v[num][6];
+        v[num][6] = v[num][5];
+        v[num][5] = v[num][4];
+        v[num][4] = v[num][3];
+        v[num][3] = v[num][2];
+        v[num][2] = v[num][1];
+        v[num][1] = tmp;
+    }
+    else{
+        v[num][0] = v[num][1];
+        v[num][1] = v[num][2];
+        v[num][0] = v[num][1];
+        v[num][1] = v[num][2];
+    }
+
+
+
+}
+
+// 0 N, 1 S, 1 cw, -1, rcw
+void rotate(int num, int dir){
+    isRotate[num] = 1;
+
+    check(num);
+
+    if(num %2 == 0){
+        isRotate[1] *= (-1*dir);
+        isRotate[3] *= (-1*dir);
+    }
+    else{
+        isRotate[0] *= (-1*dir);
+        isRotate[2] *= (-1*dir);
+    }
+
+
+
+
 }
