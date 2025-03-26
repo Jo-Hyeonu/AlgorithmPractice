@@ -2,7 +2,7 @@
 #include <vector>
 #include <queue>
 #include <utility>
-#include <bool>
+
 
 using namespace std;
 
@@ -10,7 +10,7 @@ using namespace std;
 
 int v[4][8];
 int isRotate[4];
-vector<pair<int, int>> q;
+queue<pair<int, int>> q;
 int r;
 
 
@@ -31,7 +31,7 @@ int main() {
         int t1, t2;
         cin >> t1, t2;
 
-        q.push_back({t1,t2});
+        q.push({t1,t2});
     }
 
     while(!q.empty()){
@@ -42,9 +42,15 @@ int main() {
             isRotate[i] = 0;
         }
         rotate(cur.first, cur.second);
-
-
     }
+    int ret = 0;
+    ret += v[0][0]*1;
+    ret += v[1][0]*2;
+    ret += v[2][0]*4;
+    ret += v[3][0]*8;
+    cout <<  v[0][0] << endl;
+    cout <<  v[0][0] << endl;
+    cout <<  v[0][0] << endl;
     
     return 0;
 }
@@ -63,7 +69,7 @@ void check(int num){
     if(num+1 < 4){
         right = num+1;
         if(v[num][2] != v[right][6]){
-            isRotate[right][1];
+            isRotate[right] = 1;
             check(right);
         }
     }
@@ -73,8 +79,6 @@ void check(int num){
 
 void move(int num, int dir){
     int tmp = v[num][0];
-
-
     if(dir == 1){
         v[num][0] = v[num][7];
         v[num][7] = v[num][6];
@@ -85,15 +89,18 @@ void move(int num, int dir){
         v[num][2] = v[num][1];
         v[num][1] = tmp;
     }
-    else{
+    else if(dir == -1){
         v[num][0] = v[num][1];
         v[num][1] = v[num][2];
-        v[num][0] = v[num][1];
-        v[num][1] = v[num][2];
+        v[num][2] = v[num][3];
+        v[num][3] = v[num][4];
+        v[num][4] = v[num][5];
+        v[num][5] = v[num][6];
+        v[num][6] = v[num][7];
+        v[num][7] = tmp;
     }
 
-
-
+    return;
 }
 
 // 0 N, 1 S, 1 cw, -1, rcw
@@ -111,7 +118,9 @@ void rotate(int num, int dir){
         isRotate[2] *= (-1*dir);
     }
 
+    for(int i = 0 ; i < 4 ; ++i){
+        move(i, isRotate[i]);
+    }
 
-
-
+    return;
 }
