@@ -15,6 +15,8 @@ int r;
 
 
 void rotate(int num, int dir);
+void check(int num);
+void move(int num, int dir);
 
 
 int main() {
@@ -29,13 +31,13 @@ int main() {
 
     for(int i = 0 ; i < r ; ++i){
         int t1, t2;
-        cin >> t1, t2;
+        cin >> t1 >> t2;
 
         q.push({t1,t2});
     }
-
+    pair<int,int> cur = q.front();
     while(!q.empty()){
-        pair<int,int> cur = q.front();
+        
         q.pop();
 
         for(int i = 0 ; i < 4; ++i){
@@ -44,18 +46,16 @@ int main() {
         rotate(cur.first, cur.second);
     }
     int ret = 0;
-    ret += v[0][0]*1;
-    ret += v[1][0]*2;
-    ret += v[2][0]*4;
-    ret += v[3][0]*8;
-    cout <<  v[0][0] << endl;
-    cout <<  v[0][0] << endl;
-    cout <<  v[0][0] << endl;
+
+    for(int i = 0 ; i < 4 ;++i){
+        //cout << v[i][0] << endl;
+    }
     
     return 0;
 }
 
 void check(int num){
+    cout << "call";
     int left, right;
 
     if(num-1 >= 0){
@@ -108,6 +108,10 @@ void rotate(int num, int dir){
     isRotate[num] = 1;
 
     check(num);
+
+    for(int i = 0 ; i <4 ;++i){
+        cout << isRotate[i];
+    }
 
     if(num %2 == 0){
         isRotate[1] *= (-1*dir);
