@@ -63,7 +63,9 @@ int bfs(void){
             if(vst[i][j] == 0){
                 cnt++;
                 queue<pair<int, int>> q;
+                vector<pair<int, int>> group;
                 q.push(make_pair(i,j));
+                group.push_back(make_pair(i,j));
                 vst[i][j] = cnt;
 
                 int nume = board[i][j], deno = 1;
@@ -93,6 +95,7 @@ int bfs(void){
                         ch = 1;
                         vst[nx][ny] = cnt;
                         q.push(make_pair(nx,ny));
+                        group.push_back(make_pair(nx,ny));
                         nume += board[nx][ny];
                         deno++;
                     }
@@ -100,12 +103,8 @@ int bfs(void){
 
                 int tmp = nume / deno;
 
-                for(int a = 0 ; a < n ; ++a){
-                    for(int b = 0 ; b < n; ++b){
-                        if(vst[a][b] == cnt) {
-                            board[a][b] = tmp;
-                        }
-                    }
+                for(int i = 0 ; i < group.size(); ++i){
+                    board[group[i].first][group[i].second] = tmp;
                 }
             }
         }
