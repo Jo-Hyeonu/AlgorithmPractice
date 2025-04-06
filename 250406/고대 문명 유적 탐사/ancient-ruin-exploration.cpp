@@ -226,8 +226,7 @@ int rotate(void){
                 pair<int, int> cur = q.front();
                 q.pop();
                 board[cur.first][cur.second] = 0;
-                
-
+            
                 for(int k = 0 ; k  <4 ; ++k){
                     int nx = cur.first + dx[k];
                     int ny = cur.second + dy[k];
@@ -242,6 +241,7 @@ int rotate(void){
                         continue;
                     }
                     q.push(make_pair(nx,ny));
+                    vst[nx][ny] = 1;
                     curV++;
                 }
             }
