@@ -220,11 +220,13 @@ int rotate(void){
             int curNum = board[v[i].first][v[i].second];
             queue<pair<int, int>> q;
             q.push(make_pair(v[i].first, v[i].second));
+            vst[v[i].first][v[i].second] = 1;
 
             while(!q.empty()){
                 pair<int, int> cur = q.front();
-                board[cur.first][cur.second] = 0;
                 q.pop();
+                board[cur.first][cur.second] = 0;
+                
 
                 for(int k = 0 ; k  <4 ; ++k){
                     int nx = cur.first + dx[k];
