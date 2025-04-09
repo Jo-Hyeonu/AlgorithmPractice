@@ -99,10 +99,23 @@ pair<int, int> findAttacker(void){
                 tmpPos = {i,j};
             }
             else if(board[i][j] == tmp){
-                if(tankTurn[i][j] >= tankTurn[tmpPos.first][tmpPos.second]){
+                if(tankTurn[i][j] > tankTurn[tmpPos.first][tmpPos.second]){
                     tmp = board[i][j];
                     tmpPos = {i,j};
                 }
+                else if(tankTurn[i][j] == tankTurn[tmpPos.first][tmpPos.second]){
+                    if(i+j > tmpPos.first + tmpPos.second){
+                        tmp = board[i][j];
+                        tmpPos = {i,j};
+                    }
+                    else if(i+j == tmpPos.first + tmpPos.second){
+                        if(j > tmpPos.second){
+                            tmp = board[i][j];
+                            tmpPos = {i,j};
+                        }
+                    }
+                }
+
             }
 
         }
