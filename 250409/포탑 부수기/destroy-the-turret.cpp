@@ -339,11 +339,15 @@ void doAttack(pair<int,int> attacker, pair<int,int> deffencer){
                     if(i == deffencer.first && j == deffencer.second){
                         continue;
                     }
-
-                    pair<int,int> cur = {i,j};
-                    if(find(minPath.begin(), minPath.end(), cur) == minPath.end()){
-                        board[i][j]++;
+                    if(find(victims.begin(), victims.end(), make_pair(i,j)) != victims.end()){
+                    //cout <<"victim pass"<< i << j << endl;
+                        continue;
                     }
+                    board[i][j]++;
+                    // pair<int,int> cur = {i,j};
+                    // if(find(minPath.begin(), minPath.end(), cur) == minPath.end()){
+                        
+                    // }
                 }
             }
         }
