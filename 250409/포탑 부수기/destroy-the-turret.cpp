@@ -1,376 +1,258 @@
 #include <iostream>
+#include <vector>
 #include <queue>
-#include <stack>
-#include <utility>
-#include <algorithm>
-
+#include <cstring>
 using namespace std;
 
-int n, m , k;
+int N, M, K;
+int minX, minY;
+int strX, strY;
 
-int board[11][11];
-int tankTurn[11][11];
+int dx[4] = { 0, 1, 0, -1 };
+int dy[4] = { 1, 0, -1, 0 };
+//우/하/좌/상
 
-int findLastOne(void);
-pair<int, int> findAttacker(void);
-pair<int, int> findDeffencer(void);
-void doAttack(pair<int,int> attacker, pair<int,int> deffencer);
+int cx[8] = { -1, -1, 0, 1, 1, 1, 0, -1 };
+int cy[8] = { 0, 1, 1, 1, 0, -1, -1, -1 };
+//8방향
 
-int dx[4] = {0,1,0,-1};
-int dy[4] = {1,0,-1,0};
-int ddx[8] = {0,1,0,-1,-1,-1,1,1};
-int ddy[8] = {1,0,-1,0,-1,1,-1,1};
+struct Tower {
+    int x;
+    int y;
+    int Attack;
+    int Last;
+};
+Tower Map[11][11];
+int Active[11][11];
 
-void printB(void){
-    for(int i =0 ; i < n ;++i){
-        for(int j =0 ; j < m ; ++j){
-            cout << board[i][j];
+void Input() {
+    cin >> N >> M >> K;
+    for (int i = 1; i <= N; i++)
+        for (int j = 1; j <= M; j++)
+        {
+            int Attack;
+            cin >> Attack;
+            Map[i][j] = { i, j, Attack, 0 };
         }
-        cout <<endl;
+}
+
+//공격자 선정
+void Select_Weak() {
+
+    Tower Weak = { 9999, 9999, 9999, 9999 };
+    for (int i = 1; i <= N; i++)
+        for (int j = 1; j <= M; j++)
+        {
+            if (Map[i][j].Attack <= 0) continue;
+
+            if (Weak.Attack > Map[i][j].Attack)
+                Weak = Map[i][j];
+            else if (Weak.Attack == Map[i][j].Attack)
+                if (Weak.Last < Map[i][j].Last)
+                    Weak = Map[i][j];
+                else if (Weak.Last == Map[i][j].Last)
+                    if (Weak.x + Weak.y < i + j)
+                        Weak = Map[i][j];
+                    else if (Weak.x + Weak.y == i + j)
+                        if (Weak.y < j)
+                            Weak = Map[i][j];
+                       
+        }
+
+    minX = Weak.x;
+    minY = Weak.y;
+}
+
+
+//공격 대상 선정
+void Select_Strong() {
+
+    Tower Strong = { 0, 0, 0, 0 };
+    for (int i = 1; i <= N; i++)
+        for (int j = 1; j <= M; j++)
+        {
+            if (Map[i][j].Attack <= 0) continue;
+            
+            if (Strong.Attack < Map[i][j].Attack)
+                Strong = Map[i][j];
+            else if (Strong.Attack == Map[i][j].Attack)
+                if (Strong.Last > Map[i][j].Last)
+                    Strong = Map[i][j];
+                else if (Strong.Last == Map[i][j].Last)
+                    if (Strong.x + Strong.y > i + j)
+                        Strong = Map[i][j];
+                    else if (Strong.x + Strong.y == i + j)
+                        if (Strong.y > j)
+                            Strong = Map[i][j];
+        }
+
+    strX = Strong.x;
+    strY = Strong.y;
+}
+
+bool End_Check() {
+    int Cnt = 0;
+    for (int i = 1; i <= N; i++)
+        for (int j = 1; j <= M; j++)
+            if (Map[i][j].Attack > 0) Cnt++;
+    if (Cnt == 1) return true;
+    else return false;
+}
+
+//범위 초과 고려
+pair<int, int> Make_Range(int x, int y) {
+    int px = x;
+    int py = y;
+
+    if (px < 1) px = N;
+    else if (px > N) px = 1;
+
+    if (py < 1) py = M;
+    else if (py > M) py = 1;
+
+    return { px, py };
+}
+
+//레이저 공격 가능 여부
+bool Razer(int x, int y) {
+
+    int Visit[11][11] = { 0 };
+    int Past_X[11][11] = { 0 };
+    int Past_Y[11][11] = { 0 };
+    bool Flag = false;
+
+    queue<pair<pair<int, int>, int>> Q;
+    Q.push({ {x, y}, 0 });
+    Visit[x][y] = 1;
+
+    //연결 가능여부
+    while (!Q.empty())
+    {
+        int px = Q.front().first.first;
+        int py = Q.front().first.second;
+        int time = Q.front().second;
+        Q.pop();
+
+        if(px == strX && py == strY)
+        {
+            Flag = true;
+            break;
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            int nx = px + dx[i];
+            int ny = py + dy[i];
+            pair<int, int> next = Make_Range(nx, ny);
+            nx = next.first;
+            ny = next.second;
+            //nx, ny 좌표 변환
+
+            if (Visit[nx][ny] == 1) continue;        //방문 타워
+            if (Map[nx][ny].Attack <= 0) continue;   //부숴진 타워
+
+            Visit[nx][ny] = 1;
+            Past_X[nx][ny] = px;
+            Past_Y[nx][ny] = py;
+            Q.push({ {nx, ny}, time + 1 });
+        }
     }
-    cout << endl;
+
+    //공격 감행
+    if(Flag == true)
+    {
+        Map[strX][strY].Attack -= Map[minX][minY].Attack;
+        Active[strX][strY] = 1;
+
+        int cx = Past_X[strX][strY];
+        int cy = Past_Y[strX][strY];
+        Active[cx][cy] = 1;
+
+        while(!(cx == minX && cy == minY))
+        {
+            Map[cx][cy].Attack -= (Map[minX][minY].Attack / 2);
+            int next_x = Past_X[cx][cy];
+            int next_y = Past_Y[cx][cy];
+            cx = next_x;
+            cy = next_y;
+            Active[cx][cy] = 1;
+        }
+    }
+
+    return Flag;
+}
+
+void Bomb_Attack(int x, int y) {
+    Map[x][y].Attack -= Map[minX][minY].Attack;
+    Active[x][y] = 1;
+    for (int i = 0; i < 8; i++)
+    {
+        int nx = x + cx[i];
+        int ny = y + cy[i];
+        pair<int, int> next = Make_Range(nx, ny);
+        nx = next.first;
+        ny = next.second;
+        // 좌표 변환
+
+        if (nx == minX && ny == minY) continue;  //공격자 제외
+        if (Map[nx][ny].Attack <= 0) continue;   //부숴진 영역 제외
+
+        Map[nx][ny].Attack -= (Map[minX][minY].Attack / 2);
+        Active[nx][ny] = 1;
+    }
+}
+
+void Heal() {
+    for (int i = 1; i <= N; i++)
+        for (int j = 1; j <= M; j++)
+        {
+            if (i == minX && j == minY) continue; //공격자
+            if (i == strX && j == strY) continue; //공격대상
+            if (Map[i][j].Attack <= 0) continue;  //이미 부숴짐
+            if (Active[i][j] == 1) continue;
+            //공격 경료
+            Map[i][j].Attack += 1;
+            //1씩 증가
+        }
+}
+
+void Clear() {
+    minX = 0; minY = 0;
+    strX = 0; strY = 0;
+    memset(Active, 0, sizeof(Active));
 }
 
 int main() {
-    cin >> n >> m >> k;
+    Input();
+    int Time = 1;
+    while (Time <= K)
+    {
+        //1.공격자 선정
+        Select_Weak();
 
-    for(int i = 0; i < n ;++i){
-        for(int j =0; j < m ; ++j){
-            cin >> board[i][j];
-        }
-    }
-    for(int i = 0; i < n ;++i){
-        for(int j =0; j < m ; ++j){
-            tankTurn[i][j] = 0;
-        }
-    }
-    int turn = 0;
-    while(++turn <= k){
-        
-        pair<int, int> attacker = findAttacker();
-        pair<int, int> deffencer = findDeffencer();
-        // cout << attacker.first << " " << attacker.second <<endl; 
-        // cout << deffencer.first << " " << deffencer.second <<endl; 
-        if(attacker.first == deffencer.first && attacker.second == deffencer.second){
-            break;
+        //2.공격대상 선정
+        Select_Strong();
+
+        Map[minX][minY].Attack += (N + M);
+        Map[minX][minY].Last = Time;
+
+        //3.레이저 공격/폭탄 공격 시도
+        bool Razer_Attack = Razer(minX, minY);
+        if(Razer_Attack == false)
+        {
+            Bomb_Attack(strX, strY);
         }
 
-        doAttack(attacker, deffencer);
-        //printB();
+        //종료 상황 체크
+        if (End_Check() == true) break;
 
-    }
-
-    cout << findLastOne();
-
-
-    return 0;
-}
-
-
-int findLastOne(void){
-    int tmp = 0;
-    pair<int, int> tmpPos= {0,0};
-    for(int j = 0 ; j < m ; ++j){
-        for(int i = 0 ; i < n ; ++i){
-            if(board[i][j] > tmp){
-                tmp = board[i][j];
-                tmpPos = {i,j};
-            }
-            else if(board[i][j] == tmp){
-                if(tankTurn[tmpPos.first][tmpPos.second] < tankTurn[i][j]){
-                    tmp = board[i][j];
-                    tmpPos = {i,j};
-                }
-            }
-        }
+        //4.포탑 정비
+        Heal();
+        Clear();
+        Time++;
     }
 
-    return tmp;
-}
-
-pair<int, int> findAttacker(void){
-    int tmp = 5001;
-    pair<int, int> tmpPos= {0,0};
-
-    for(int i =0 ; i  <  n; ++i){
-        for(int j =0 ;  j< m ; ++j){
-            if(board[i][j] < tmp && board[i][j] != 0){
-                tmp = board[i][j];
-                tmpPos = {i,j};
-            }
-            else if(board[i][j] == tmp){
-                if(tankTurn[i][j] > tankTurn[tmpPos.first][tmpPos.second]){
-                    tmp = board[i][j];
-                    tmpPos = {i,j};
-                }
-                else if(tankTurn[i][j] == tankTurn[tmpPos.first][tmpPos.second]){
-                    if(i+j > tmpPos.first + tmpPos.second){
-                        tmp = board[i][j];
-                        tmpPos = {i,j};
-                    }
-                    else if(i+j == tmpPos.first + tmpPos.second){
-                        if(j > tmpPos.second){
-                            tmp = board[i][j];
-                            tmpPos = {i,j};
-                        }
-                    }
-                }
-
-            }
-
-        }
-    }
-    
-    return tmpPos;
-}
-
-pair<int, int> findDeffencer(void){
-    int tmp = 0;
-    pair<int, int> tmpPos= {0,0};
-    for(int j = 0 ; j < m ; ++j){
-        for(int i = 0 ; i < n ; ++i){
-            if(board[i][j] > tmp){
-                
-                tmp = board[i][j];
-                tmpPos = {i,j};
-            }
-            else if(board[i][j] == tmp){
-                if(tankTurn[tmpPos.first][tmpPos.second] > tankTurn[i][j]){
-
-                    tmp = board[i][j];
-                    tmpPos = {i,j};
-                }
-                else if(tankTurn[tmpPos.first][tmpPos.second] == tankTurn[i][j]){
-                    if(tmpPos.first + tmpPos.second > i+j){
-                        tmp = board[i][j];
-                        tmpPos = {i,j};
-                    }
-                    else if(tmpPos.first + tmpPos.second == i+j){
-                        if(j < tmpPos.second){
-                            tmp = board[i][j];
-                            tmpPos = {i,j};
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return tmpPos;
-}
-
-vector<pair<int,int>> findPath(pair<int,int> attacker, pair<int,int> deffencer){
-    int vst[11][11];
-    for(int i = 0 ; i < n ; ++i){
-        for(int j = 0 ; j < m; ++j){
-            vst[i][j] = 0;
-        }
-    }
-    int path[11][11];
-    for(int i = 0 ; i < n ; ++i){
-        for(int j = 0 ; j < m; ++j){
-            path[i][j] = 5;
-        }
-    }
-    queue<pair<int, int>> q;
-    q.push(make_pair(attacker.first, attacker.second));
-    vst[attacker.first][attacker.second] = 1;
-    path[attacker.first][attacker.second] = -1;
-
-    while(!q.empty()){
-        pair<int,int> cur = q.front();
-        q.pop();
-        if(cur.first == deffencer.first && cur.second == deffencer.second){
-            break;
-        }
-
-        for(int i= 0 ; i < 4 ;++i){
-            int nx = cur.first + dx[i];
-            int ny = cur.second + dy[i];
-
-            if(nx < 0){
-                nx += n;
-            }
-            else if(nx >=n){
-                nx -= n;
-            }
-            if(ny < 0){
-                ny += m;
-            }
-            else if(ny >=m){
-                ny -= m;
-            }
-            if(board[nx][ny] == 0){
-                continue;
-            }
-            if(vst[nx][ny] != 0){
-                continue;
-            }
-            vst[nx][ny] = vst[cur.first][cur.second] + 1;
-            path[nx][ny] = i;
-            q.push(make_pair(nx,ny));
-
-        }
-    }
-    
-    vector<pair<int,int>> p;
-    int traceX = deffencer.first , traceY = deffencer.second;
-    if(vst[traceX][traceY] == 0){
-        return p;
-    }
-
-
-    while(path[traceX][traceY] != -1){
-        p.push_back(make_pair(traceX,traceY));
-
-        int dir = path[traceX][traceY];
-        traceX = traceX - dx[dir];
-        traceY = traceY - dy[dir];
-        if(traceX < 0){
-            traceX += n;
-        }
-        else if(traceX >=n){
-            traceX -= n;
-        }
-        if(traceY < 0){
-            traceY += m;
-        }
-        else if(traceY >=m){
-            traceY -= m;
-        }
-        
-
-    }
-    p.push_back(make_pair(attacker.first, attacker.second));
-    
-    return p;
-}
-
-void doAttack(pair<int,int> attacker, pair<int,int> deffencer){
-    board[attacker.first][attacker.second] += (n+m);
-    int power = board[attacker.first][attacker.second];
-
-    vector<pair<int,int>> minPath = findPath(attacker, deffencer);
-    // for(int i =0 ; i < minPath.size() ; ++i){
-    //     cout << minPath[i].first << " " << minPath[i].second << endl;
-    // }
-    // cout << attacker.first << "a" << attacker.second <<endl;
-    // cout << deffencer.first << "d" << deffencer.second <<endl;
-    if(minPath.size() == 0){
-        tankTurn[attacker.first][attacker.second]++;
-        if(board[deffencer.first][deffencer.second] - power < 0){
-            board[deffencer.first][deffencer.second] = 0;
-        }
-        else{
-            board[deffencer.first][deffencer.second] -= power;
-        }
-        
-        vector<pair<int,int>> victims;
-        
-        for(int i = 0 ; i < 8; ++i){
-            int sx = deffencer.first + ddx[i];
-            int sy = deffencer.second + ddy[i];
-            //cout << sx << ","<< sy <<endl;
-            if(sx < 0){
-                sx += n;
-            }
-            else if(sx >=n){
-                sx -= n;
-            }
-            if(sy < 0){
-                sy += m;
-            }
-            else if(sy >=m){
-                sy -= m;
-            }
-            if(sx == attacker.first && sy == attacker.second){
-                continue;
-            }
-            if(board[sx][sy] == 0){
-                continue;
-            }
-            victims.push_back(make_pair(sx,sy));
-            if(board[sx][sy] - (power/2) < 0){
-                board[sx][sy] = 0;
-            }
-            else{
-                board[sx][sy] -= (power/2);
-            }
-
-        }
-        // for(auto v : victims){
-        //     cout << v.first << " " << v.second << endl;
-        // }
-
-        for(int i = 0 ; i < n; ++i){
-            for(int j = 0 ; j < m ;++j){
-                if(find(victims.begin(), victims.end(), make_pair(i,j)) != victims.end()){
-                   //cout <<"victim pass"<< i << j << endl;
-                   continue;
-                }
-                if(i == attacker.first && j == attacker.second){
-                    continue;
-                }
-                if(i == deffencer.first && j == deffencer.second){
-                    continue;
-                }
-
-                if(board[i][j] > 0 ){
-                    // cout << "ghlqhr\n";
-                    // cout << i << "recover" << j <<endl;
-                    board[i][j]++;
-                }
-            }
-        }
-
-        
-    }
-    else{ //razer attack
-        // for(int i = 0 ; i < n ; ++i){
-        //     for(int j = 0 ; j < m ; ++j){
-        //         cout << board[i][j];
-        //     }
-        //     cout << endl;
-        // }
-        //cout << "do razer\n";
-        tankTurn[attacker.first][attacker.second]++;
-        board[minPath[0].first][minPath[0].second] -= power;
-        for(int i = 1 ; i < minPath.size()-1 ; ++i){
-            //cout << minPath[i].first << " " << minPath[i].second <<endl;
-            if(board[minPath[i].first][minPath[i].second] - (power/2) < 0){
-                board[minPath[i].first][minPath[i].second] = 0;
-            }
-            else{
-                board[minPath[i].first][minPath[i].second] -= (power/2);
-            }
-            //board[minPath[i].first][minPath[i].second] -= (power/2);
-        }
-
-        //복구
-        for(int i = 0 ; i < n; ++i){
-            for(int j = 0 ; j < m ;++j){
-                if(board[i][j] < 0){
-                    board[i][j] = 0;
-                }
-                else if(board[i][j] > 0){
-                    if(i == attacker.first && j == attacker.second){
-                    continue;
-                    }
-                    if(i == deffencer.first && j == deffencer.second){
-                        continue;
-                    }
-                    if(find(minPath.begin(), minPath.end(), make_pair(i,j)) != minPath.end()){
-                    //cout <<"victim pass"<< i << j << endl;
-                        continue;
-                    }
-                    board[i][j]++;
-                    // pair<int,int> cur = {i,j};
-                    // if(find(minPath.begin(), minPath.end(), cur) == minPath.end()){
-                        
-                    // }
-                }
-            }
-        }
-    }
-    
+    Select_Strong();
+    cout << Map[strX][strY].Attack;
 
 }
