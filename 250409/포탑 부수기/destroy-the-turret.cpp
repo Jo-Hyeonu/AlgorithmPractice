@@ -339,7 +339,7 @@ void doAttack(pair<int,int> attacker, pair<int,int> deffencer){
                     if(i == deffencer.first && j == deffencer.second){
                         continue;
                     }
-                    if(find(victims.begin(), victims.end(), make_pair(i,j)) != victims.end()){
+                    if(find(minPath.begin(), minPath.end(), make_pair(i,j)) != minPath.end()){
                     //cout <<"victim pass"<< i << j << endl;
                         continue;
                     }
