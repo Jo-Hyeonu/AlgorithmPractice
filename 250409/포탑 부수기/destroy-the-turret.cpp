@@ -19,7 +19,7 @@ void doAttack(pair<int,int> attacker, pair<int,int> deffencer);
 int dx[4] = {0,1,0,-1};
 int dy[4] = {1,0,-1,0};
 int ddx[8] = {0,1,0,-1,-1,-1,1,1};
-int ddy[8] = {0,1,0,-1,-1,1,-1,1};
+int ddy[8] = {1,0,-1,0,-1,1,-1,1};
 
 void printB(void){
     for(int i =0 ; i < n ;++i){
@@ -28,6 +28,7 @@ void printB(void){
         }
         cout <<endl;
     }
+    cout << endl;
 }
 
 int main() {
@@ -205,18 +206,22 @@ void doAttack(pair<int,int> attacker, pair<int,int> deffencer){
     // for(int i =0 ; i < minPath.size() ; ++i){
     //     cout << minPath[i].first << " " << minPath[i].second << endl;
     // }
+    // cout << attacker.first << "a" << attacker.second <<endl;
+    // cout << deffencer.first << "d" << deffencer.second <<endl;
     if(minPath.size() == 0){
-        //cout << "Do Bomb\n";
-        board[deffencer.first][deffencer.second] -= power;
+        if(board[deffencer.first][deffencer.second] - power < 0){
+            board[deffencer.first][deffencer.second] = 0;
+        }
+        else{
+            board[deffencer.first][deffencer.second] -= power;
+        }
+        
         vector<pair<int,int>> victims;
-
+        
         for(int i = 0 ; i < 8; ++i){
             int sx = deffencer.first + ddx[i];
             int sy = deffencer.second + ddy[i];
-
-            if(sx == attacker.first && sy == attacker.second){
-                continue;
-            }
+            //cout << sx << ","<< sy <<endl;
             if(sx < 0){
                 sx += n;
             }
@@ -229,6 +234,12 @@ void doAttack(pair<int,int> attacker, pair<int,int> deffencer){
             else if(sy >=m){
                 sy -= m;
             }
+            if(sx == attacker.first && sy == attacker.second){
+                continue;
+            }
+            if(board[sx][sy] == 0){
+                continue;
+            }
             victims.push_back(make_pair(sx,sy));
             if(board[sx][sy] - (power/2) < 0){
                 board[sx][sy] = 0;
@@ -238,13 +249,19 @@ void doAttack(pair<int,int> attacker, pair<int,int> deffencer){
             }
 
         }
+        // for(auto v : victims){
+        //     cout << v.first << " " << v.second << endl;
+        // }
 
         for(int i = 0 ; i < n; ++i){
             for(int j = 0 ; j < m ;++j){
-                if(find(victims.begin(), victims.end(), make_pair(i,j)) == victims.end()){
+                if(find(victims.begin(), victims.end(), make_pair(i,j)) != victims.end()){
+                   //cout <<"victim pass"<< i << j << endl;
                    continue;
                 }
                 else if(board[i][j] > 0 && i != attacker.first && i != deffencer.first && j != attacker.second && j != deffencer.second){
+                    // cout << "ghlqhr\n";
+                    // cout << i << "recover" << j <<endl;
                     board[i][j]++;
                 }
             }
