@@ -21,6 +21,15 @@ int dy[4] = {1,0,-1,0};
 int ddx[8] = {0,1,0,-1,-1,-1,1,1};
 int ddy[8] = {0,1,0,-1,-1,1,-1,1};
 
+void printB(void){
+    for(int i =0 ; i < n ;++i){
+        for(int j =0 ; j < m ; ++j){
+            cout << board[i][j];
+        }
+        cout <<endl;
+    }
+}
+
 int main() {
     cin >> n >> m >> k;
 
@@ -38,16 +47,15 @@ int main() {
     while(++turn <= k){
         
         pair<int, int> attacker = findAttacker();
-        
         pair<int, int> deffencer = findDeffencer();
-
+        // cout << attacker.first << " " << attacker.second <<endl; 
+        // cout << deffencer.first << " " << deffencer.second <<endl; 
         if(attacker.first == deffencer.first && attacker.second == deffencer.second){
             break;
         }
 
         doAttack(attacker, deffencer);
-
-        
+        //printB();
 
     }
 
@@ -98,7 +106,7 @@ pair<int, int> findAttacker(void){
 
         }
     }
-    board[tmpPos.first][tmpPos.second] += (n+m);
+    
     return tmpPos;
 }
 
@@ -108,11 +116,13 @@ pair<int, int> findDeffencer(void){
     for(int j = 0 ; j < m ; ++j){
         for(int i = 0 ; i < n ; ++i){
             if(board[i][j] > tmp){
+                
                 tmp = board[i][j];
                 tmpPos = {i,j};
             }
             else if(board[i][j] == tmp){
                 if(tankTurn[tmpPos.first][tmpPos.second] < tankTurn[i][j]){
+
                     tmp = board[i][j];
                     tmpPos = {i,j};
                 }
@@ -188,6 +198,7 @@ vector<pair<int,int>> findPath(pair<int,int> attacker, pair<int,int> deffencer){
 }
 
 void doAttack(pair<int,int> attacker, pair<int,int> deffencer){
+    board[attacker.first][attacker.second] += (n+m);
     int power = board[attacker.first][attacker.second];
 
     vector<pair<int,int>> minPath = findPath(attacker, deffencer);
@@ -195,7 +206,9 @@ void doAttack(pair<int,int> attacker, pair<int,int> deffencer){
     //     cout << minPath[i].first << " " << minPath[i].second << endl;
     // }
     if(minPath.size() == 0){
+        //cout << "Do Bomb\n";
         board[deffencer.first][deffencer.second] -= power;
+        vector<pair<int,int>> victims;
 
         for(int i = 0 ; i < 8; ++i){
             int sx = deffencer.first + ddx[i];
@@ -216,40 +229,27 @@ void doAttack(pair<int,int> attacker, pair<int,int> deffencer){
             else if(sy >=m){
                 sy -= m;
             }
-            board[sx][sy] -= (power/2);
+            victims.push_back(make_pair(sx,sy));
+            if(board[sx][sy] - (power/2) < 0){
+                board[sx][sy] = 0;
+            }
+            else{
+                board[sx][sy] -= (power/2);
+            }
+
         }
 
         for(int i = 0 ; i < n; ++i){
             for(int j = 0 ; j < m ;++j){
-                if(board[i][j] < 0){
-                    board[i][j] = 0;
+                if(find(victims.begin(), victims.end(), make_pair(i,j)) == victims.end()){
+                   continue;
                 }
                 else if(board[i][j] > 0 && i != attacker.first && i != deffencer.first && j != attacker.second && j != deffencer.second){
                     board[i][j]++;
                 }
             }
         }
-        for(int i = 0 ; i < 8; ++i){
-            int sx = deffencer.first + ddx[i];
-            int sy = deffencer.second + ddy[i];
 
-            if(sx == attacker.first && sy == attacker.second){
-                continue;
-            }
-            if(sx < 0){
-                sx += n;
-            }
-            else if(sx >=n){
-                sx -= n;
-            }
-            if(sy < 0){
-                sy += m;
-            }
-            else if(sy >=m){
-                sy -= m;
-            }
-            board[sx][sy]--;
-        }
         
     }
     else{ //razer attack
