@@ -348,22 +348,26 @@ void doAttack(pair<int,int> attacker, pair<int,int> deffencer){
         //복구
         for(int i = 0 ; i < n; ++i){
             for(int j = 0 ; j < m ;++j){
-                if(find(minPath.begin(), minPath.end(), make_pair(i,j)) != minPath.end()){
+                if(board[i][j] < 0){
+                    board[i][j] = 0;
+                }
+                else if(board[i][j] > 0){
+                    if(i == attacker.first && j == attacker.second){
+                    continue;
+                    }
+                    if(i == deffencer.first && j == deffencer.second){
+                        continue;
+                    }
+                    if(find(minPath.begin(), minPath.end(), make_pair(i,j)) != minPath.end()){
                     //cout <<"victim pass"<< i << j << endl;
-                    continue;
-                }
-                if(i == attacker.first && j == attacker.second){
-                    continue;
-                }
-                if(i == deffencer.first && j == deffencer.second){
-                    continue;
-                }
-                if(board[i][j] > 0 ){
-                    // cout << "ghlqhr\n";
-                    // cout << i << "recover" << j <<endl;
+                        continue;
+                    }
                     board[i][j]++;
+                    // pair<int,int> cur = {i,j};
+                    // if(find(minPath.begin(), minPath.end(), cur) == minPath.end()){
+                        
+                    // }
                 }
-                    
             }
         }
     }
