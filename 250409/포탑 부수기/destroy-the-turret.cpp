@@ -336,32 +336,34 @@ void doAttack(pair<int,int> attacker, pair<int,int> deffencer){
         board[minPath[0].first][minPath[0].second] -= power;
         for(int i = 1 ; i < minPath.size()-1 ; ++i){
             //cout << minPath[i].first << " " << minPath[i].second <<endl;
-            board[minPath[i].first][minPath[i].second] -= (power/2);
+            if(board[minPath[i].first][minPath[i].second] - (power/2) < 0){
+                board[minPath[i].first][minPath[i].second] = 0;
+            }
+            else{
+                board[minPath[i].first][minPath[i].second] -= (power/2);
+            }
+            //board[minPath[i].first][minPath[i].second] -= (power/2);
         }
 
         //복구
         for(int i = 0 ; i < n; ++i){
             for(int j = 0 ; j < m ;++j){
-                if(board[i][j] < 0){
-                    board[i][j] = 0;
-                }
-                else if(board[i][j] > 0){
-                    if(i == attacker.first && j == attacker.second){
-                    continue;
-                    }
-                    if(i == deffencer.first && j == deffencer.second){
-                        continue;
-                    }
-                    if(find(minPath.begin(), minPath.end(), make_pair(i,j)) != minPath.end()){
+                if(find(minPath.begin(), minPath.end(), make_pair(i,j)) != minPath.end()){
                     //cout <<"victim pass"<< i << j << endl;
-                        continue;
-                    }
-                    board[i][j]++;
-                    // pair<int,int> cur = {i,j};
-                    // if(find(minPath.begin(), minPath.end(), cur) == minPath.end()){
-                        
-                    // }
+                    continue;
                 }
+                if(i == attacker.first && j == attacker.second){
+                    continue;
+                }
+                if(i == deffencer.first && j == deffencer.second){
+                    continue;
+                }
+                if(board[i][j] > 0 ){
+                    // cout << "ghlqhr\n";
+                    // cout << i << "recover" << j <<endl;
+                    board[i][j]++;
+                }
+                    
             }
         }
     }
