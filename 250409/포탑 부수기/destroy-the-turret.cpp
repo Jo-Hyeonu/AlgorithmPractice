@@ -122,10 +122,22 @@ pair<int, int> findDeffencer(void){
                 tmpPos = {i,j};
             }
             else if(board[i][j] == tmp){
-                if(tankTurn[tmpPos.first][tmpPos.second] < tankTurn[i][j]){
+                if(tankTurn[tmpPos.first][tmpPos.second] > tankTurn[i][j]){
 
                     tmp = board[i][j];
                     tmpPos = {i,j};
+                }
+                else if(tankTurn[tmpPos.first][tmpPos.second] == tankTurn[i][j]){
+                    if(tmpPos.first + tmpPos.second > i+j){
+                        tmp = board[i][j];
+                        tmpPos = {i,j};
+                    }
+                    else if(tmpPos.first + tmpPos.second == i+j){
+                        if(j < tmpPos.second){
+                            tmp = board[i][j];
+                            tmpPos = {i,j};
+                        }
+                    }
                 }
             }
         }
@@ -162,8 +174,17 @@ vector<pair<int,int>> findPath(pair<int,int> attacker, pair<int,int> deffencer){
             int nx = cur.first + dx[i];
             int ny = cur.second + dy[i];
 
-            if(nx < 0 || nx >= n || ny < 0 || ny >=m){
-                continue;
+            if(nx < 0){
+                nx += n;
+            }
+            else if(nx >=n){
+                nx -= n;
+            }
+            if(ny < 0){
+                ny += m;
+            }
+            else if(ny >=m){
+                ny -= m;
             }
             if(board[nx][ny] == 0){
                 continue;
@@ -191,6 +212,19 @@ vector<pair<int,int>> findPath(pair<int,int> attacker, pair<int,int> deffencer){
         int dir = path[traceX][traceY];
         traceX = traceX - dx[dir];
         traceY = traceY - dy[dir];
+        if(traceX < 0){
+            traceX += n;
+        }
+        else if(traceX >=n){
+            traceX -= n;
+        }
+        if(traceY < 0){
+            traceY += m;
+        }
+        else if(traceY >=m){
+            traceY -= m;
+        }
+        
 
     }
     p.push_back(make_pair(attacker.first, attacker.second));
@@ -209,6 +243,7 @@ void doAttack(pair<int,int> attacker, pair<int,int> deffencer){
     // cout << attacker.first << "a" << attacker.second <<endl;
     // cout << deffencer.first << "d" << deffencer.second <<endl;
     if(minPath.size() == 0){
+        tankTurn[attacker.first][attacker.second]++;
         if(board[deffencer.first][deffencer.second] - power < 0){
             board[deffencer.first][deffencer.second] = 0;
         }
@@ -259,7 +294,14 @@ void doAttack(pair<int,int> attacker, pair<int,int> deffencer){
                    //cout <<"victim pass"<< i << j << endl;
                    continue;
                 }
-                else if(board[i][j] > 0 && i != attacker.first && i != deffencer.first && j != attacker.second && j != deffencer.second){
+                if(i == attacker.first && j == attacker.second){
+                    continue;
+                }
+                if(i == deffencer.first && j == deffencer.second){
+                    continue;
+                }
+
+                if(board[i][j] > 0 ){
                     // cout << "ghlqhr\n";
                     // cout << i << "recover" << j <<endl;
                     board[i][j]++;
@@ -276,6 +318,8 @@ void doAttack(pair<int,int> attacker, pair<int,int> deffencer){
         //     }
         //     cout << endl;
         // }
+        //cout << "do razer\n";
+        tankTurn[attacker.first][attacker.second]++;
         board[minPath[0].first][minPath[0].second] -= power;
         for(int i = 1 ; i < minPath.size()-1 ; ++i){
             //cout << minPath[i].first << " " << minPath[i].second <<endl;
@@ -289,6 +333,13 @@ void doAttack(pair<int,int> attacker, pair<int,int> deffencer){
                     board[i][j] = 0;
                 }
                 else if(board[i][j] > 0){
+                    if(i == attacker.first && j == attacker.second){
+                    continue;
+                    }
+                    if(i == deffencer.first && j == deffencer.second){
+                        continue;
+                    }
+
                     pair<int,int> cur = {i,j};
                     if(find(minPath.begin(), minPath.end(), cur) == minPath.end()){
                         board[i][j]++;
@@ -297,6 +348,6 @@ void doAttack(pair<int,int> attacker, pair<int,int> deffencer){
             }
         }
     }
-
+    
 
 }
